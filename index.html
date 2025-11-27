@@ -597,6 +597,8 @@ async function bookMatch() {
         document.getElementById("team2").value = "";
         selectedTime = null;
         highlightSelectedTime();
+		alert("✅ Match booked successfully!");
+        console.log("✅ Match booked successfully!");
     } catch (error) {
         console.error("Error adding match:", error);
         alert("Failed to book match. See console for details.");
