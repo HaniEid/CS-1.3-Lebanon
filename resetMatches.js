@@ -1,5 +1,5 @@
 const admin = require("firebase-admin");
-
+console.log(admin);
 const serviceAccount = JSON.parse(process.env.FIREBASE_CREDENTIALS);
 
 admin.initializeApp({
@@ -11,8 +11,10 @@ const db = admin.firestore();
 async function resetMatches() {
   try {
     // Query only rows where deleted === false
+    console.log("Starting reset...");
     const snapshot = await db.collection("matches_dev").where("deleted", "==", false).get();
-
+    console.log("Found", snapshot.size, "matches");
+    
     if (snapshot.empty) {
       console.log("No matches to reset.");
       return;
