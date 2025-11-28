@@ -108,14 +108,6 @@ button:hover:not(:disabled) { opacity: 0.9; }
     text-align: center;
 }
 .time-button:disabled { background-color: grey; cursor: not-allowed; border: 1px solid grey; opacity: 0.6; }
-.server-buttons2 { 
-    display: flex; 
-    gap: 10px; 
-    margin-bottom: 0px; 
-    margin-top: 25px; 
-    width: 100%; 
-    flex-wrap: wrap;
-}
 .server-buttons {
     display: flex;
     flex-wrap: wrap;
@@ -124,17 +116,6 @@ button:hover:not(:disabled) { opacity: 0.9; }
     #justify-items: center; /* center buttons in their grid cell */
     justify-content: center;
     width: 100%;
-}
-.server-button2 {
-    #padding: 10px 20px 10px 20px;
-    font-size: 15px;
-    background-color: #228B22;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    color: white;
-    gap: 20px;
-    flex: 1 1 auto;  
 }
 .server-button {
     padding: 10px 15px;
@@ -145,13 +126,6 @@ button:hover:not(:disabled) { opacity: 0.9; }
     background-color: #228B22;
 }
 .server-button.selected { border: 3px solid #ffbf00; }
-.server-tables2 { 
-	display: flex; 
-	gap: 20px; 
-	flex-wrap: wrap; 
-	justify-content: center; 
-	width: 100%; 
-}
 .server-tables {
     display: grid;
     #grid-template-columns: repeat(auto-fit, minmax(800px, 1fr));
@@ -165,9 +139,6 @@ button:hover:not(:disabled) { opacity: 0.9; }
         grid-template-columns: 1fr;  /* stack all tables on small screens */
     }
 }
-
-
-.server-card2 { background: rgba(0,0,0,0.85); border-radius: 10px; padding: 15px; min-width: 250px; flex: 1; }
 .server-card {
     background: rgba(0,0,0,0.85);
     border-radius: 10px;
@@ -194,7 +165,6 @@ th { background-color: #222; color: #ffcc00; }
 }.toggle-btn{
    width: 80px;
 }
-
 #loadingOverlay {
     position: fixed;
     top: 0;
@@ -207,7 +177,6 @@ th { background-color: #222; color: #ffcc00; }
     align-items: center;
     z-index: 9999; /* on top of everything */
 }
-
 .spinner {
     border: 8px solid #f3f3f3; /* light grey */
     border-top: 8px solid #ffcc00; /* gold spinning part */
@@ -331,6 +300,13 @@ input:checked + .slider:before {
     flex: 1;          /* both divs become equal size */
     gap: 0;
 }
+
+#resetMatchesBtn{
+    width: 20%;
+    margin-bottom: 30px;
+    margin-top: 30px;
+    font-size: medium;
+}
 </style>
 
 <!-- Firebase compat libs (easier integration) -->
@@ -365,10 +341,11 @@ input:checked + .slider:before {
             <button class="server-button" data-server="4" id="server4Btn">Server 4</button>
             <button class="server-button" data-server="5" id="server5Btn">Server 5</button>
         </div>
-
+        
         <div id="timeButtons" class="time-buttons"></div>
         <button id="bookMatchBtn">Book Match</button>
     </div>  
+    <button id="resetMatchesBtn" onclick="resetAllMatches()">Reset All Matches</button>
 </div>
 <div class="server-tables" id="serverTables"></div>
 
@@ -529,13 +506,17 @@ serverButtons.forEach(btn=>{
 });
 
 const password = "havoc";
+let skipConfirm = false;
 
 window.deleteMatch = async function(id) {
-   const userInput = prompt("Enter Admin Password:");
-   if (userInput !== password) {
-       alert("Wrong password!");
-       return;
-   } 
+    if (!skipConfirm) {
+        const userInput = prompt("Enter Admin Password:");
+        if (userInput !== password) {
+            alert("Wrong password!");
+            return;
+    } 
+    }
+    
    //if (!confirm("Delete this match?")) return;
     
 
@@ -544,14 +525,34 @@ window.deleteMatch = async function(id) {
         //await deleteDoc(matchRef);
 
         // Mark as deleted instead of removing permanently
-        await updateDoc(matchRef, {
-            deleted: true
-        });
+        await updateDoc(matchRef, {deleted: true});
         console.log("Deleted match:", id);
     } catch (err) {
         console.error(err);
     }
 };
+
+// Reset Matches
+window.resetAllMatches = async function(){
+    
+    if (!confirm("Are you sure you want to delete ALL matches?")) return;
+
+    const pwd = prompt("Enter password");
+    if (pwd !== password) return;
+
+    skipConfirm = true;
+
+    const buttons = document.querySelectorAll('.delete');
+
+     buttons.forEach(btn => {
+        btn.click();      // triggers your existing deleteMatch() logic
+    });
+    
+    skipConfirm = false;
+    // Finally clear the table visually
+    //document.querySelector('#myTable tbody').innerHTML = "";    
+}
+
 
 // ---------- Firebase real-time listener ----------
   function loadMatches(callback) {
@@ -597,7 +598,7 @@ async function bookMatch() {
         document.getElementById("team2").value = "";
         selectedTime = null;
         highlightSelectedTime();
-		alert("✅ Match booked successfully!");
+        alert("✅ Match booked successfully!");
         console.log("✅ Match booked successfully!");
     } catch (error) {
         console.error("Error adding match:", error);
@@ -613,9 +614,7 @@ function renderAllMatches(matches){
         tbody.innerHTML = "";
         
         const serverMatches = matches.filter(m => m.server === Number(Object.keys(enabledServers)[s-1])).sort((a,b) => timeToMinutes(a.time) - timeToMinutes(b.time));
-  	console.log(Object.keys(enabledServers)[s-1]);
-        console.log(serverMatches);
-
+  	    
         serverMatches.forEach(m => {
             const row = document.createElement("tr");
             row.innerHTML = `<td>${escapeHtml(m.team1)} vs ${escapeHtml(m.team2)}</td>
