@@ -301,13 +301,17 @@ input:checked + .slider:before {
     gap: 0;
 }
 
-#resetMatchesBtn{
-    width: 10%;
-    margin-bottom: 30px;
-    margin-top: 30px;
+#resetMatchesBtn {
+    width: 200px;           /* good desktop size */
+    max-width: 100%;        /* prevents overflow */
+    padding: 10px 20px;     /* prevent cropping */
+    margin: 30px auto;      /* center the button */
     font-size: medium;
     background-color: black;
     color: white;
+    display: block;         /* makes centering work */
+    border: none;
+    border-radius: 6px;
 }
 </style>
 
@@ -376,7 +380,7 @@ const firebaseConfig = {
   const app = initializeApp(firebaseConfig);
   const analytics = getAnalytics(app);
   const db = getFirestore(app);
-  const matchesCol = collection(db, "matches_prod");
+  const matchesCol = collection(db, "matches_dev");
 
 document.getElementById("bookMatchBtn").addEventListener("click", bookMatch);
 // ---------- App state ----------
