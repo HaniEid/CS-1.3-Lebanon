@@ -11,7 +11,7 @@ async function resetMatches() {
   try {
     // Query only rows where deleted === false
     console.log("Starting reset...");
-    const snapshot = await db.collection("matches_dev").where("deleted", "==", false).get();
+    const snapshot = await db.collection("matches_prod").where("deleted", "==", false).get();
     console.log("Found", snapshot.size, "matches");
     
     if (snapshot.empty) {
